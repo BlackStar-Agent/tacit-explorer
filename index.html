@@ -272,8 +272,7 @@ button:hover{background:#123a2c}
 
 <script>
 "use strict";
-/* ============================== snapshot data ============================== */
-var SNAP_TIME = "2026-11-07T10:54:55Z";
+/* ============================== snapshot data ============================== */var SNAP_TIME = "2026-11-07T10:54:55Z";
 var SNAP = {
   chainReads: {"relayTip":"{'result': '0x00000000000000000000000000000000000000000000000000000000000ee04b', 'error': None}","ethBlock":26362511,"baseBlock":54292764},
   reflection: {"network":"mainnet","attestedHeight":974896,"tipHeight":974896,"lagBlocks":0,"confirmations":24,"foldedCrossoutCount":19,"bridgeBurns":602,"bridgeMinted":579,"consumedCount":2,"liveNotes":3748,"burnDeposits":127,"burnsAwaitingBundle":0,"oldestAwaitingHeight":null},
@@ -340,9 +339,6 @@ function big(x){ try{ return BigInt(x); }catch(e){ return 0n; } }
 function hexDec(x){ try{ return BigInt(x).toString(10); }catch(e){ return "0"; } }
 
 /* ============================== boot: render snapshot immediately ============================== */
-renderSnapshot();
-refreshPill();
-clockTick(); setInterval(clockTick, 1000);
 function clockTick(){
   var age = Math.floor((Date.now() - Date.parse(SNAP_TIME+"Z"))/1000);
   $("clock").textContent = "page loaded · data " + (age<90? age+"s" : Math.floor(age/60)+"m") + " old";
@@ -610,12 +606,13 @@ function applyLive(){
   if(live.succ==="0x"||live.succ==="0x0000000000000000000000000000000000000000000000000000000000000000") txt("successor","none — root");
   else if(live.succ) txt("successor", short(live.succ,6));
   // farms
-  if(live.farm){
-    var checks=live.farm.checks||[];
-    checks.forEach(function(ch){
-      if(ch.name==="emission"&&ch.detail){ var m=ch.detail.match(/([\d.]+)\s*TAC\/day/); if(m) txt("emission", Number(m[1]).toLocaleString("en-US",{maximumFractionDigits:1})+" /day"); }
-      if(ch.name==="runway"&&ch.detail){ txt("runway", ch.detail + " · solvency ✓"); }
-    });
+  if(live.farm && Array.isArray(live.farm.checks)){
+    try{
+      live.farm.checks.forEach(function(ch){
+        if(ch.name==="emission"&&ch.detail){ var m=ch.detail.match(/([\d.]+)\s*TAC\/day/); if(m) txt("emission", Number(m[1]).toLocaleString("en-US",{maximumFractionDigits:1})+" /day"); }
+        if(ch.name==="runway"&&ch.detail){ txt("runway", ch.detail + " · solvency ✓"); }
+      });
+    }catch(e){}
   }
   // quote + prover
   if(live.quote) txt("feeFloor", live.quote.gasAwareFloorUnits+" u");
@@ -650,6 +647,11 @@ function applyLive(){
   }
   refreshPill();
 }
+
+/* ============================== boot: everything is declared, start rendering ============================== */
+renderSnapshot();
+refreshPill();
+clockTick(); setInterval(clockTick, 1000);
 boot();
 
 /* ============================== lookup ============================== */

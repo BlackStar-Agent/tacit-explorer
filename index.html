@@ -454,7 +454,7 @@ function resolveXnsNames(){
   var list=Array.prototype.slice.call(els).slice(0,8);
   list.forEach(function(el){
     var addr=el.getAttribute("data-addr").replace("0x","").toLowerCase();
-    ethCall(RPC_ETH, XNS, selOf("getName(address)")+"0"+"0".repeat(24)+addr).then(function(res){
+    ethCall(RPC_ETH, XNS, selOf("getName(address)")+"0".repeat(24)+addr).then(function(res){
       if(res && res.length>130){
         try{
           var off=parseInt(res.substr(2,64),16), ln=parseInt(res.substr(66,64),16);
@@ -724,6 +724,7 @@ function doLookup(){
         h+='<div class="sub2" style="margin-top:6px">bp1 = the pool lane of a tacit1 address (view key ‖ A ‖ N) — payments into the EVM pool or the Bitcoin shielded pool pay these 97 bytes.</div>';
       }
     }
+    out.innerHTML=h;
   } else if(kind==="btcTx"){
     h+='<div class="sub2" style="margin-top:8px">Checking mempool.space…</div>';
     out.innerHTML=h;
@@ -748,7 +749,7 @@ function doLookup(){
       +'<div class="sub2" style="margin-top:8px">checking reverse XNS name + leaderboard…</div></div></div>';
     out.innerHTML=h;
     var hex="0x"+s.slice(2).toLowerCase();
-    ethCall(RPC_ETH, XNS, selOf("getName(address)")+"0"+"0".repeat(24)+hex.slice(2)).then(function(res){
+    ethCall(RPC_ETH, XNS, selOf("getName(address)")+"0".repeat(24)+hex.slice(2)).then(function(res){
       var name="";
       if(res&&res.length>130){ try{ var off=parseInt(res.substr(2,64),16), ln=parseInt(res.substr(66,64),16); if(ln>0&&ln<64) name=bytesToAscii(res,off,ln); }catch(e){} }
       var row=(live.lb||SNAP.leaderboard).filter(function(r){return r.address.toLowerCase()===hex.toLowerCase();})[0];

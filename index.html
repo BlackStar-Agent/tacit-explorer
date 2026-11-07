@@ -765,7 +765,7 @@ function doLookup(){
     var nm=s, enc=[]; for(var i=0;i<nm.length;i++) enc.push(nm.charCodeAt(i).toString(16).padStart(2,"0"));
     var data=selOf("getAddress(string)")
       +"0000000000000000000000000000000000000000000000000000000000000020"  /* offset 0x20 */
-      +String("00000000000000000000000000000000000000000000000000000000000000"+nm.length.toString(16)).slice(-64)
+      +nm.length.toString(16).padStart(64,"0")
       +enc.join("")
       +"0".repeat((64-(nm.length*2)%64)%64);
     ethCall(RPC_ETH, XNS, data).then(function(res){

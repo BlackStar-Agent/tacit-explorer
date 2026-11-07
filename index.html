@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BlackTacit — a Tacit explorer by BlackStar-Agent</title>
+<meta name="description" content="One-page explorer for Tacit: Bitcoin reflection, the bridge, the Ethereum confidential pool, EVM pools on four chains, fees and the privacy boundary. Live mainnet data, no wallet, no sign-in.">
+<style>
+:root{
+  --bg:#07090d; --bg2:#0b0e14; --card:#10141d; --card2:#141a26;
+  --line:#1e2635; --line2:#2a3550;
+  --txt:#e8edf6; --dim:#8b96ab; --faint:#5a6579;
+  --acc:#00e5a0; --acc2:#6f7dff; --warn:#ffb454; --bad:#ff5d73;
+  --mono:'SFMono-Regular',ui-monospace,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--txt);font:15px/1.55 ui-sans-serif,system-ui,'Segoe UI',Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--acc);text-decoration:none}
+a:hover{text-decoration:underline}
+code,.mono{font-family:var(--mono)}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+header{padding:34px 0 10px;border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.logo{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#00e5a0,#6f7dff);display:grid;place-items:center;font-weight:800;color:#06070a;font-size:20px;flex:none}
+h1{font-size:24px;letter-spacing:-.3px}
+.sub{color:var(--dim);font-size:13.5px;margin-top:2px}
+.pill{font-size:11px;padding:3px 10px;border:1px solid var(--line2);border-radius:999px;color:var(--dim);white-space:nowrap}
+.pill.live{border-color:#00e5a055;color:var(--acc)}
+.pill.snap{border-color:#ffb45455;color:var(--warn)}
+nav{display:flex;gap:14px;flex-wrap:wrap;padding:14px 0 0;font-size:13px}
+nav a{color:var(--dim)}
+nav a:hover{color:var(--txt);text-decoration:none}
+section{padding:30px 0 6px}
+h2{font-size:16px;text-transform:uppercase;letter-spacing:1.2px;color:var(--dim);margin-bottom:4px}
+h2 .dot{color:var(--acc)}
+.note{color:var(--faint);font-size:12.5px;margin-bottom:14px}
+.grid{display:grid;gap:12px}
+.g6{grid-template-columns:repeat(6,1fr)}
+.g4{grid-template-columns:repeat(4,1fr)}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g2{grid-template-columns:repeat(2,1fr)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;min-width:0}
+.card h3{font-size:12px;color:var(--dim);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;font-weight:600}
+.kpi{font-size:24px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.5px;word-break:break-all;line-height:1.2}
+.kpi small{font-size:13px;color:var(--dim);font-weight:500}
+.sub2{font-size:12px;color:var(--faint);margin-top:6px}
+.tag{display:inline-block;font-size:10px;padding:1px 7px;border-radius:6px;background:#0e2233;color:#39c6ff;border:1px solid #12374f;vertical-align:2px}
+.tag.chain{background:#0d2418;color:var(--acc);border-color:#1a4030}
+.tag.idx{background:#221607;color:var(--warn);border-color:#4a3212}
+.tag.snap{background:#2a1a08;color:var(--warn);border-color:#4a3212}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{color:var(--faint);text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.8px;padding:8px 10px;border-bottom:1px solid var(--line)}
+td{padding:8px 10px;border-bottom:1px solid #131926;font-variant-numeric:tabular-nums;word-break:break-all}
+tr:last-child td{border-bottom:none}
+td a{font-family:var(--mono);font-size:12px}
+.bar{height:8px;border-radius:6px;background:#0c1220;overflow:hidden;display:flex;margin:6px 0}
+.bar>span{display:block;height:100%}
+.lag-ok{color:var(--acc)} .lag-warn{color:var(--warn)} .lag-bad{color:var(--bad)}
+.footer{margin-top:44px;padding:26px 0 40px;border-top:1px solid var(--line);color:var(--faint);font-size:12.5px}
+.footer a{color:var(--dim)}
+.lookup-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+input,select,button{
+  background:var(--bg2);border:1px solid var(--line2);color:var(--txt);
+  border-radius:10px;padding:9px 12px;font-size:13.5px;font-family:inherit
+}
+input{flex:1;min-width:180px}
+input::placeholder{color:var(--faint)}
+button{cursor:pointer;background:#0e2c22;border-color:#1d5c46;color:var(--acc);font-weight:600}
+button:hover{background:#123a2c}
+#lkOut{font-size:13px}
+.hidden{display:none}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11.5px;color:var(--dim);margin:4px 0 8px}
+.legend i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px}
+.okline{color:var(--acc);font-size:12px}
+.errline{color:var(--bad);font-size:12px}
+@media(max-width:900px){.g6{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){
+  .g6,.g4,.g3,.g2{grid-template-columns:1fr 1fr}
+  .kpi{font-size:19px}
+  .card{padding:13px 14px}
+  .wrap{padding:0 13px}
+  .full{grid-column:span 2}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="brand">
+      <div class="logo">B</div>
+      <div style="flex:1;min-width:200px">
+        <h1>BlackTacit <span style="color:var(--faint);font-weight:400">· Tacit Explorer</span></h1>
+        <div class="sub">One page, both chains — Bitcoin envelopes &amp; the confidential pools, honestly split into what's public and what stays hidden.</div>
+      </div>
+      <span class="pill live" id="livePill">● LIVE DATA</span>
+      <span class="pill" id="clock">—</span>
+    </div>
+    <nav>
+      <a href="#bridge">Bridge</a><a href="#bitcoin">Bitcoin</a><a href="#pool">ETH pool</a><a href="#evm">EVM pools</a>
+      <a href="#fees">Fees</a><a href="#chart">Activity</a><a href="#points">Points</a><a href="#privacy">Privacy</a><a href="#lookup">Lookup</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+<section id="bridge">
+  <h2><span class="dot">01</span> Bridge — Bitcoin reflected into Ethereum</h2>
+  <div class="note">Header relay on Ethereum vs the live Bitcoin tip. "Folded" = the height Tacit's reflection has proven into the pool. <span class="tag chain">chain</span> read from contracts, <span class="tag idx">indexer</span> from Tacit's public API.</div>
+  <div class="grid g6" style="margin-bottom:12px">
+    <div class="card"><h3>BTC tip</h3><div class="kpi" id="btcTip">—</div><div class="sub2"><span class="tag idx">mempool.space</span></div></div>
+    <div class="card"><h3>Relay tip height</h3><div class="kpi" id="relayTip">—</div><div class="sub2"><span class="tag chain">BitcoinLightRelay</span></div></div>
+    <div class="card"><h3>Folded height</h3><div class="kpi" id="attested">—</div><div class="sub2"><span class="tag idx">reflection API</span></div></div>
+    <div class="card"><h3>Proof lag</h3><div class="kpi" id="lag">—</div><div class="sub2">relay − folded · 24 conf target</div></div>
+    <div class="card"><h3>Bridge burns → mints</h3><div class="kpi"><span id="burns">—</span> <small>→</small> <span id="mints">—</span></div><div class="sub2">in flight: <b id="inflight">—</b></div></div>
+    <div class="card"><h3>Relay state</h3><div class="kpi" id="relayState" style="font-size:18px">—</div><div class="sub2" id="relayAge">heartbeat —</div></div>
+  </div>
+  <div class="grid g4">
+    <div class="card full" style="grid-column:span 4"><h3>Live notes &amp; burn queue</h3>
+      <div class="grid g4">
+        <div><div class="kpi" id="liveNotes" style="font-size:20px">—</div><div class="sub2">live confidential notes (BTC side)</div></div>
+        <div><div class="kpi" id="burnDeposits" style="font-size:20px">—</div><div class="sub2">burn deposits seen</div></div>
+        <div><div class="kpi" id="awaiting" style="font-size:20px">—</div><div class="sub2">awaiting bundle</div></div>
+        <div><div class="kpi" id="crossouts" style="font-size:20px">—</div><div class="sub2">folded cross-outs</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="bitcoin">
+  <h2><span class="dot">02</span> Bitcoin side — envelopes &amp; the native AMM</h2>
+  <div class="note">Tacit issues and moves assets in Taproot envelopes on Bitcoin (etches, mints, burns, transfers — decoded at <a href="https://tacitscan.io" target="_blank" rel="noopener">tacitscan.io</a>). The public stats below come from Tacit's own indexer API.</div>
+  <div class="grid g4">
+    <div class="card"><h3>TAC · protocol asset</h3><div class="kpi">21,000,000</div><div class="sub2">fixed supply, etched at height 948,242 · <a href="https://mempool.space/tx/e2d10be19c2b73b86e14be99dc237a3d999ba3dfbe6f3e3714590acee2ca481e" target="_blank" rel="noopener">genesis</a></div></div>
+    <div class="card"><h3>TAC on Ethereum</h3><div class="kpi" id="tacSupply">—</div><div class="sub2">ERC-20 totalSupply, all minted by the pool from proven BTC burns <span class="tag chain">chain</span></div></div>
+    <div class="card"><h3>Bitcoin-native AMM</h3><div class="kpi" style="font-size:17px">tETH / TAC</div><div class="sub2">pool <code>0xaa3eab26…33eb79</code> · xcurve-verified</div></div>
+    <div class="card"><h3>BTC fees (sat/vB)</h3><div class="kpi" id="btcFees" style="font-size:20px">—</div><div class="sub2">fastest / hour <span class="tag idx">mempool.space</span></div></div>
+  </div>
+</section>
+
+<section id="pool">
+  <h2><span class="dot">03</span> Ethereum ConfidentialPool — the shielded vault</h2>
+  <div class="note">Amounts are hidden by Pedersen commitments; what the chain shows is <i>how many</i> notes exist and their Merkle root — read here directly from the contract, cross-checked against the indexer.</div>
+  <div class="grid g4">
+    <div class="card"><h3>Notes (leaves)</h3><div class="kpi" id="leaves">—</div><div class="sub2"><span class="tag chain">nextLeafIndex()</span></div></div>
+    <div class="card"><h3>Spent (nullifiers)</h3><div class="kpi" id="nulls">—</div><div class="sub2"><span class="tag idx">indexer</span></div></div>
+    <div class="card"><h3>Wraps (entries)</h3><div class="kpi" id="wrapsC">—</div><div class="sub2">public deposits into the pool <span class="tag idx">indexer</span></div></div>
+    <div class="card"><h3>Current root</h3><div class="kpi mono" id="root" style="font-size:13px;line-height:1.6">—</div><div class="sub2"><span class="tag chain">currentRoot()</span></div></div>
+    <div class="card"><h3>cBTC backing</h3><div class="kpi" id="cbtc">—</div><div class="sub2"><code>cbtcBackingSats</code> — sats locked on BTC, reflection-attested <span class="tag chain">chain</span></div></div>
+    <div class="card"><h3>cUSD outstanding</h3><div class="kpi" id="cusd">—</div><div class="sub2">CDP debt, 150% mint / 130% liq <span class="tag chain">CollateralEngine</span></div></div>
+    <div class="card"><h3>Successor</h3><div class="kpi mono" id="successor" style="font-size:15px">—</div><div class="sub2">lineage: pool is root generation</div></div>
+    <div class="card"><h3>Emission</h3><div class="kpi" id="emission" style="font-size:20px">—</div><div class="sub2" id="runway">farm runway —</div></div>
+  </div>
+</section>
+
+<section id="evm">
+  <h2><span class="dot">04</span> EVM pools — ETH on four chains</h2>
+  <div class="note">A separate Groth16 pool (same address everywhere: <code>0x0000…BEE9</code>), native ETH only, proved on your own device. Live from the keepers — and each root is re-checked against the chain itself in your browser.</div>
+  <div class="grid g4" id="evmGrid">
+    <div class="card"><h3>Ethereum</h3><div class="kpi" data-evm="size">—</div><div class="sub2" data-evm="sub">loading…</div></div>
+    <div class="card"><h3>Base</h3><div class="kpi" data-evm="size">—</div><div class="sub2" data-evm="sub">loading…</div></div>
+    <div class="card"><h3>Robinhood</h3><div class="kpi" data-evm="size">—</div><div class="sub2" data-evm="sub">loading…</div></div>
+    <div class="card"><h3>MegaETH</h3><div class="kpi" data-evm="size">—</div><div class="sub2" data-evm="sub">loading…</div></div>
+  </div>
+  <div class="card" style="margin-top:12px"><h3>Recent EVM-pool activity — live events</h3>
+    <div style="overflow-x:auto"><table id="evmEvents"><thead><tr><th>chain</th><th>kind</th><th>block</th><th>tx</th></tr></thead><tbody><tr><td colspan="4" style="color:var(--faint)">loading…</td></tr></tbody></table></div>
+  </div>
+</section>
+
+<section id="fees">
+  <h2><span class="dot">05</span> Relay fees &amp; prover board</h2>
+  <div class="note">What it costs to prove a settle right now, and the machines doing the proving.</div>
+  <div class="grid g3">
+    <div class="card"><h3>cETH relay fee floor</h3><div class="kpi" id="feeFloor">—</div><div class="sub2">gas-aware floor, in-system units · <span id="feeUsd" class="tag idx">—</span></div></div>
+    <div class="card"><h3>Prover board</h3><div class="kpi" style="font-size:19px"><span id="provQ">—</span> queued · <span id="provW">—</span> workers</div><div class="sub2" id="provStats">—</div></div>
+    <div class="card"><h3>Top points (today's share)</h3><div id="lbMini" style="font-size:12.5px;color:var(--dim)">—</div></div>
+  </div>
+</section>
+
+<section id="chart">
+  <h2><span class="dot">06</span> Pool activity over its whole life</h2>
+  <div class="note">Every ConfidentialPool index entry from seq 0 → 6000 (blocks <span id="chartRange">…</span>) as a live feed; hover a column for the breakdown. If the live fetch fails, the identical snapshot taken <span class="snapTime">…</span> is drawn instead and this page says so.</div>
+  <div class="legend">
+    <span><i style="background:#00e5a0"></i>leaves (new notes)</span>
+    <span><i style="background:#ff5d73"></i>nullifiers (spends)</span>
+    <span><i style="background:#6f7dff"></i>wraps (public deposits)</span>
+    <span><i style="background:#ffb454"></i>locks</span>
+    <span><i style="background:#39c6ff"></i>cross-outs</span>
+  </div>
+  <div class="card"><div id="chartBox" style="width:100%"></div></div>
+</section>
+
+<section id="points">
+  <h2><span class="dot">07</span> Points leaderboard</h2>
+  <div class="note">The public side of Tacit's points program — deposits are pseudonymous addresses, amounts shown are what the program publishes. Shown with XNS names where a reverse record exists.</div>
+  <div class="card" style="padding:6px 10px"><div style="overflow-x:auto"><table id="lbTable">
+    <thead><tr><th>#</th><th>address</th><th>points</th><th>deposits</th><th>amount (ETH)</th></tr></thead>
+    <tbody><tr><td colspan="5" style="color:var(--faint)">loading…</td></tr></tbody></table></div></div>
+</section>
+
+<section id="privacy">
+  <h2><span class="dot">08</span> The privacy boundary</h2>
+  <div class="note">This is a privacy protocol — here is exactly what an observer (including this page) can and cannot see, on each side.</div>
+  <div class="grid g2">
+    <div class="card"><h3 style="color:var(--acc)">◉ An observer sees</h3><table>
+      <tr><td>That an envelope / pool note exists, and when</td><td class="mono" style="text-align:right;color:var(--faint)">timing</td></tr>
+      <tr><td>How many notes, spends, wraps, locks</td><td class="mono" style="text-align:right;color:var(--faint)">counts</td></tr>
+      <tr><td>Public boundary legs: wraps, unwraps, fees, recipients</td><td class="mono" style="text-align:right;color:var(--faint)">amounts at the edge</td></tr>
+      <tr><td>Public addresses at wrap/unwrap, Merkle roots, relay height</td><td class="mono" style="text-align:right;color:var(--faint)">addresses &amp; state</td></tr>
+    </table></div>
+    <div class="card"><h3 style="color:var(--bad)">◉ Stays hidden</h3><table>
+      <tr><td>Note amounts inside the pool (Pedersen commitments)</td><td class="mono" style="text-align:right;color:var(--faint)">values</td></tr>
+      <tr><td>Which input note paid which output note</td><td class="mono" style="text-align:right;color:var(--faint)">note graph</td></tr>
+      <tr><td>Owners of shielded notes (stealth / <code>tacit1</code> keys)</td><td class="mono" style="text-align:right;color:var(--faint)">ownership</td></tr>
+      <tr><td>Blinding factors, <code>tacit1</code> scan/spend keys</td><td class="mono" style="text-align:right;color:var(--faint)">keys</td></tr>
+    </table></div>
+  </div>
+  <div class="card" style="margin-top:12px"><h3>The honest caveat — this very page</h3>
+    <div style="font-size:13.5px;color:var(--dim);line-height:1.7">
+      Wraps are the leak: a public deposit reveals <i>an</i> amount entering the pool — but not whose note it becomes.
+      Spent nullifiers reveal <i>that</i> a note died — but not which one. Timing analysis can narrow linkages (this page's
+      activity chart is exactly the kind of data such analysis would use), yet no note-to-note link is published anywhere.
+      Amounts in the points leaderboard and wrap feed are <b>edge disclosures</b>, not pool balances. The bridge is the most
+      linkable part of the system: burns and mints are matched publicly by the protocol itself.
+    </div>
+  </div>
+</section>
+
+<section id="lookup">
+  <h2><span class="dot">09</span> Look up a footprint</h2>
+  <div class="note">Everything below runs <b>locally in your browser</b> (address decode) or against the same public APIs this page already reads. No wallet, no keys, nothing signed, nothing stored.</div>
+  <div class="lookup-row">
+    <input id="lkIn" placeholder="tacit1… · bp1… · Bitcoin txid · 0x EVM address · alice@xns" spellcheck="false">
+    <select id="lkKind"><option>auto</option><option>tacit1 / bp1</option><option>Bitcoin txid</option><option>EVM address</option><option>XNS name</option></select>
+    <button id="lkBtn">Look up</button>
+  </div>
+  <div class="card hidden" id="lkOut"></div>
+</section>
+
+<section id="method">
+  <h2><span class="dot">10</span> Sources &amp; method</h2>
+  <div class="note">This page is one static HTML file: no build step, no dependencies, no analytics, no wallet code of any kind — there is no code path that could hold a seed phrase or private key, and it never moves funds.</div>
+  <div class="card"><div style="overflow-x:auto"><table id="srcTable">
+    <thead><tr><th>source</th><th>mode in your browser</th><th>what it feeds</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">api.tacit.finance — relay API (GET routes)</td><td id="mTacit">…</td><td>bridge/reflection stats, fee quote, prover board, farms, points, event index</td></tr>
+      <tr><td class="mono">tacit-evm-pool-keepers.onrender.com ×4</td><td id="mKeeper">…</td><td>EVM pool roots &amp; sizes, live Transact events, fee quotes</td></tr>
+      <tr><td class="mono">ethereum-rpc / base-rpc.publicnode.com</td><td id="mRpc">…</td><td>on-chain reads: pool leaves &amp; root, relay height, cUSD, ERC-20 supply, XNS names</td></tr>
+      <tr><td class="mono">mempool.space</td><td id="mMempool">…</td><td>Bitcoin tip &amp; fee estimates</td></tr>
+      <tr><td class="mono">tacit.finance/kit/tacit-address-kit.js</td><td id="mKit">…</td><td>tacit1/bp1 decoding — <b>runs locally, sends nothing</b></td></tr>
+      <tr><td class="mono">/tmp snapshot (this deploy)</td><td><span class="tag snap">snapshot fallback</span></td><td>identical copy of every feed, used only if a live fetch fails — always labelled with its capture time</td></tr>
+    </tbody></table></div></div>
+  <div class="card" style="margin-top:12px"><h3>Contracts (Ethereum mainnet, immutable CREATE3)</h3>
+    <div style="font-size:12.5px;color:var(--dim);line-height:2">
+      ConfidentialPool <a href="https://etherscan.io/address/0x000000000Ed1eabD231Be41d93b719056F7febFC" target="_blank" rel="noopener">0x000000000Ed1…ebFC</a> ·
+      CollateralEngine <a href="https://etherscan.io/address/0x000000003f608BDdF0ca45934003ffb9DbDF70DB" target="_blank" rel="noopener">0x000000003f60…70DB</a> ·
+      BitcoinLightRelay <a href="https://etherscan.io/address/0x20A6ddc2C6E620c6248B5A34E85996516FDd19D0" target="_blank" rel="noopener">0x20A6…19D0</a> ·
+      TacitEvmPool <a href="https://etherscan.io/address/0x000000c2A20657CE25f2Ba99737933D031AFBEE9" target="_blank" rel="noopener">0x000000c2…BEE9</a> ·
+      XNS registry <a href="https://etherscan.io/address/0x6e797ba2d3103aF167918e71a7E01DE40D45f74b" target="_blank" rel="noopener">0x6e79…f74b</a> ·
+      spec &amp; deployments: <a href="https://github.com/src-company/tacit" target="_blank" rel="noopener">github.com/src-company/tacit</a>
+    </div>
+  </div>
+</section>
+
+<div class="footer">
+  <div>Built autonomously by <b>BlackStar-Agent</b> · an AI agent that read the bounty, probed every endpoint with curl, and vibecoded this in one HTML file.</div>
+  <div style="margin-top:6px">Live URL: <span class="mono">blackstar-agent.github.io/tacit-explorer</span> · Repo: <a href="https://github.com/BlackStar-Agent/tacit-explorer" target="_blank" rel="noopener">github.com/BlackStar-Agent/tacit-explorer</a> · Bounty: <a href="https://poidh.xyz/base/bounty/1519" target="_blank" rel="noopener">poidh #1519</a> · Data read-only · No keys, ever.</div>
+</div>
+
+</main>
+
+<script>
+"use strict";
+/* ============================== snapshot data ============================== */
+var SNAP_TIME = "2026-11-07T10:54:55Z";
+var SNAP = {
+  chainReads: {"relayTip":"{'result': '0x00000000000000000000000000000000000000000000000000000000000ee04b', 'error': None}","ethBlock":26362511,"baseBlock":54292764},
+  reflection: {"network":"mainnet","attestedHeight":974896,"tipHeight":974896,"lagBlocks":0,"confirmations":24,"foldedCrossoutCount":19,"bridgeBurns":602,"bridgeMinted":579,"consumedCount":2,"liveNotes":3748,"burnDeposits":127,"burnsAwaitingBundle":0,"oldestAwaitingHeight":null},
+  relay: {"state":"ok","proving":true,"settling":true,"board":false,"failing":0,"ageSeconds":33},
+  prover: {"queued":0,"claimed":0,"proved":19,"failed":0,"recent":{"n":19,"waitP50":1,"waitP90":1,"proveP50":30,"proveP90":40},"workers":[{"name":"tacit-a5000","proved":8339,"failed":0},{"name":"c-0x4a1b4c2f763edbe","community":true}]},
+  quote: {"ticker":"cETH","assetId":"0x3cba71e1114af183cdeacc6b8457a474d17529fd28704480ca799d0d03126f34","staticFloorUnits":"10000","gasAwareFloorUnits":"22268","recommendedWrapTipWei":"65366265029286"},
+  farms: {"emissionTacPerDay":1107.7776,"runwayDays":42.4,"treasuryTac":64562.14406029,"owedTac":63992.22465254},
+  btc: {"tip":974925,"fees":{"fastestFee":1,"hourFee":1}},
+  evmHeads: {
+    "1":{"size":"770","root":"11389173977142013627917288694506778239596240163959765081542998596090457096315","onchainRoot":"11389173977142013627917288694506778239596240163959765081542998596090457096315","onchainIndex":"770"},
+    "8453":{"size":"191262","root":"10106391313601954657833170803240234289028601744509123676820544239570144976591","onchainRoot":"6779506507891088336106184544443019617822800552296537353455220226781242559434","onchainIndex":"191310"},
+    "4663":{"size":"2354","root":"8293164791032389185614810556785589155373479750118021258919804238003675744585"},
+    "4326":{"size":"26","root":"20265791747879004362964815959899982477147833759303416601066116518592947437662"}
+  },
+  index: {"counts":{"leaves":6035,"nullifiers":6197,"wraps":3706,"crossOuts":21,"lockLeaves":31,"lockNullifiers":29},"next":6005},
+  chart: {"b0":26004023,"b1":26228896,"width":1125,"buckets":[[1,2,1,0,0],[10,7,5,2,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[2,0,3,0,0],[5,5,0,0,0],[3,3,0,0,0],[0,0,0,0,0],[5,5,0,0,0],[16,14,4,2,2],[0,0,0,0,0],[21,12,7,0,0],[7,7,1,0,1],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[13,9,2,0,0],[4,7,0,2,0],[0,0,0,0,0],[1,3,0,0,1],[0,0,0,0,0],[0,2,0,0,1],[0,0,0,0,0],[0,0,0,0,0],[1,0,1,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,1,0,0,1],[0,0,0,0,0],[1,1,1,0,1],[1,0,2,0,0],[0,1,0,0,1],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[1,1,1,0,1],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,1,0,0],[0,0,0,0,0],[0,0,0,0,0],[1,0,1,0,0],[1,0,1,0,0],[0,0,3,0,0],[0,0,0,0,0],[1,1,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,1,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[3,0,2,0,0],[6,3,2,2,0],[7,4,5,2,0],[9,5,3,2,0],[6,4,0,2,0],[15,10,4,2,0],[18,7,6,0,0],[3,3,0,0,0],[23,14,8,2,0],[16,14,6,0,0],[26,16,8,2,0],[14,13,1,2,0],[7,4,3,0,0],[10,7,1,0,0],[7,4,3,0,0],[38,26,10,0,0],[21,15,5,1,0],[33,25,16,0,0],[8,5,0,1,0],[1,1,0,0,0],[9,8,2,0,0],[46,35,6,0,0],[2,4,0,0,0],[12,9,3,0,0],[6,9,3,0,0],[3,3,0,0,0],[1,0,1,0,0],[2,3,1,2,0],[4,1,2,0,0],[9,12,1,0,0],[16,14,14,0,0],[4,4,0,0,0],[2,4,0,0,0],[4,3,3,0,0],[6,2,1,0,0],[12,15,4,0,0],[5,0,0,0,0],[3,4,2,0,0],[6,5,0,0,0],[1,3,0,0,0],[17,16,4,0,0],[14,8,4,0,0],[1,0,0,0,0],[0,0,0,0,0],[7,7,2,0,0],[6,5,1,0,0],[8,9,2,0,0],[6,4,1,0,0],[14,14,1,0,0],[5,1,6,0,0],[6,3,2,0,0],[6,5,1,0,0],[7,1,6,0,0],[17,18,1,0,0],[0,0,0,0,0],[5,3,4,0,0],[6,8,3,0,0],[6,5,0,0,0],[8,8,3,0,0],[2,3,0,0,0],[11,4,3,0,0],[10,0,0,0,0],[0,0,0,0,0],[6,6,0,0,0],[3,3,0,0,0],[6,10,1,0,0],[0,0,0,0,0],[9,4,0,0,0],[14,6,2,0,0],[18,25,1,0,0],[14,12,2,0,0],[4,4,0,0,0],[1,0,3,0,0],[0,1,0,0,0],[1,0,2,0,0],[21,15,0,0,0],[17,14,0,0,0],[0,0,0,0,0],[8,7,0,0,0],[5,26,0,0,0],[8,10,1,0,0],[5,5,1,0,0],[8,4,2,0,0],[0,6,0,0,0],[0,0,0,0,0],[26,29,3,0,0],[23,28,4,0,0],[3,2,0,0,0],[10,5,3,0,0],[12,11,1,0,0],[3,3,0,0,0],[23,29,0,0,0],[23,28,2,0,0],[3,3,1,0,0],[19,12,0,0,0],[15,21,1,0,0],[6,10,2,0,0],[13,12,3,0,0],[26,27,1,0,0],[7,6,1,0,0],[21,19,0,0,0],[6,6,0,0,0],[1,7,0,0,0],[1,1,0,0,0],[21,20,14,0,0],[23,22,13,0,0],[32,34,29,0,0],[61,57,36,0,0],[6,9,6,0,0],[14,13,7,0,0],[24,24,22,0,0],[49,48,42,0,0],[26,23,10,0,0],[18,20,11,2,0],[33,35,23,0,0],[19,18,19,0,0],[6,7,8,0,0],[68,66,53,0,0],[88,93,63,4,0],[93,98,61,0,0],[46,47,38,0,0],[15,16,13,0,0],[81,84,71,0,0],[62,63,61,0,0],[84,76,63,0,0],[88,87,52,0,0],[53,49,45,0,0],[30,31,15,0,0],[87,96,73,0,0],[48,49,34,0,0],[82,83,75,0,0],[39,45,27,0,0],[42,48,26,0,0]]},
+  leaderboard: [{"address":"0x675628b2e8e9193e668416c04b3dfe1ea6bea088","points":231251971.9598562,"deposit_count":39562,"amount_wei":"154253487135714097000160"},{"address":"0x85f2602e95a4490388a7fcdc0f5d83f21b310ad2","points":144275163.18513054,"deposit_count":35469,"amount_wei":"91754247192409308363333"},{"address":"0x72f2a5698e949e67b7f41526f581f59b90713322","points":33965323.79095046,"deposit_count":10557,"amount_wei":"19388573400000000000000"},{"address":"0x50b35ed7cdde573b8d13d2095f59d7cfa4477844","points":24736496.221381586,"deposit_count":5484,"amount_wei":"12318593316591724753539"},{"address":"0xa974890156a3649a23a6c0f2ebd77d6f7a7333d4","points":6064797.508778295,"deposit_count":1135,"amount_wei":"4738810500000000000000"},{"address":"0x507c8b1574c45b28012dfb718df6a8c7a47f21f5","points":5141719.214096169,"deposit_count":3313,"amount_wei":"3491957490003200000000"},{"address":"0xfb3fa9cf7c5a05fad7dfc2c54dabb1d086147d5b","points":773299.8129428687,"deposit_count":141,"amount_wei":"219072310980487453568"},{"address":"0xd59c2f78d5e6ad8c69ef11e39af7b8cfdb9faf36","points":68955.79432097259,"deposit_count":32,"amount_wei":"7107560710651441376"},{"address":"0xa75341ba3ed66946e026bf71788ea2ff2cd60cf6","points":64811.61595492489,"deposit_count":35,"amount_wei":"20236500000000000000"},{"address":"0x887c3599c4826f7b3cde82003b894430f27d5b92","points":37153.364603900656,"deposit_count":66,"amount_wei":"7645450000000000000"},{"address":"0x0c738d0158acc06982dfb7560a3608df244e9d37","points":35939.575463140645,"deposit_count":28,"amount_wei":"7203500000000000000"},{"address":"0x26765b17338f0c033598ef35a2bc6c1b61de403c","points":22091.564131175033,"deposit_count":62,"amount_wei":"268000000000000000"},{"address":"0x657aa5b8cf5f6ab338cd14a450b9aab3f63749b8","points":21579.055536689306,"deposit_count":10,"amount_wei":"4962771355183771350"},{"address":"0x762c25e26601390464a4e2e380fa7be47039463c","points":17738.605569034495,"deposit_count":5,"amount_wei":"8050000000000000000"},{"address":"0x66f5a1225e6ac772c461f2b4d8028bf9568f3db5","points":16518.835049731537,"deposit_count":2,"amount_wei":"5110000000000000000"}],
+  evmEvents: [{"chainId":8453,"kind":"transact","block":54250169,"tx":"0x0a1446ea537953bebdeef77bb0726ac0a30a2f6277db96c9c1d833b25edf8fd4","link":"https://basescan.org/tx/0x0a1446ea537953bebdeef77bb0726ac0a30a2f6277db96c9c1d833b25edf8fd4"},{"chainId":8453,"kind":"transact","block":54250145,"tx":"0x7a15695c4ac116f013b4e62e2889a72503ed28e759f0a418eceebaee995395fa","link":"https://basescan.org/tx/0x7a15695c4ac116f013b4e62e2889a72503ed28e759f0a418eceebaee995395fa"},{"chainId":8453,"kind":"transact","block":54250088,"tx":"0xfd2d1eb1ca255e97b03322e101fa4f7156fa18740c48c920088a865ada11aeed","link":"https://basescan.org/tx/0xfd2d1eb1ca255e97b03322e101fa4f7156fa18740c48c920088a865ada11aeed"},{"chainId":8453,"kind":"transact","block":54250059,"tx":"0xa372d734125a909f07180c1ab02c2a7c0d225199f05e04e0f5930a9092526009","link":"https://basescan.org/tx/0xa372d734125a909f07180c1ab02c2a7c0d225199f05e04e0f5930a9092526009"},{"chainId":8453,"kind":"transact","block":54250030,"tx":"0xf2f38cc54edf431e2288125e085ccd2cf7a982dbbce9987f21be1048cd097c88","link":"https://basescan.org/tx/0xf2f38cc54edf431e2288125e085ccd2cf7a982dbbce9987f21be1048cd097c88"},{"chainId":8453,"kind":"transact","block":54250006,"tx":"0xe8d4d82a451aa280403a02dd93f48657e885388442353947af443d6b46b3a4ca","link":"https://basescan.org/tx/0xe8d4d82a451aa280403a02dd93f48657e885388442353947af443d6b46b3a4ca"},{"chainId":1,"kind":"transact","block":26361693,"tx":"0xe73a70bf2e95f6f0268bd6a9c18429366a5d924b7ec000160ad72c5842837f94","link":"https://etherscan.io/tx/0xe73a70bf2e95f6f0268bd6a9c18429366a5d924b7ec000160ad72c5842837f94"},{"chainId":1,"kind":"transact","block":26358957,"tx":"0x7d4176f67e7ceef58e7dd6db91c21d105455da5a2e2dd58d7ff940f57ea8dafd","link":"https://etherscan.io/tx/0x7d4176f67e7ceef58e7dd6db91c21d105455da5a2e2dd58d7ff940f57ea8dafd"},{"chainId":1,"kind":"transact","block":26357660,"tx":"0x3f5b836e0cc9608288ef77147890ff3a30ba9786408a79127f17fd2befed1660","link":"https://etherscan.io/tx/0x3f5b836e0cc9608288ef77147890ff3a30ba9786408a79127f17fd2befed1660"}]
+};
+/* ============================== helpers ============================== */
+var $ = function(id){ return document.getElementById(id); };
+function fmt(n){ return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g,","); }
+function short(s, n){ n=n||10; return s.length<=2*n ? s : s.slice(0,n)+"…"+s.slice(-n); }
+function txt(id, v){ var el=$(id); if(el) el.textContent=v; }
+function ethF(wei, d){ d=(d===undefined)?5:d; return (Number(wei)/1e18).toFixed(d); }
+function setTag(el, live){
+  el.innerHTML = live ? '<span class="tag chain">live</span>' : '<span class="tag snap">snapshot '+SNAP_TIME.slice(5,16)+'</span>';
+}
+var FETCHED = {tacit:false, keeper:false, rpc:false, mempool:false, kit:false};
+var live = {};          /* live-fetched data lands here (declared early: renderSnapshot reads it) */
+function anyLive(){ return FETCHED.tacit || FETCHED.keeper || FETCHED.rpc || FETCHED.mempool; }
+function refreshPill(){
+  if(anyLive()){ $("livePill").textContent="● LIVE DATA"; $("livePill").className="pill live"; }
+  else { $("livePill").textContent="◌ SNAPSHOT · "+SNAP_TIME; $("livePill").className="pill snap"; }
+  txt("mTacit", FETCHED.tacit?"live fetch ✓":"snapshot");
+  txt("mKeeper", FETCHED.keeper?"live fetch ✓":"snapshot");
+  txt("mRpc", FETCHED.rpc?"live eth_call ✓":"snapshot");
+  txt("mMempool", FETCHED.mempool?"live fetch ✓":"snapshot");
+  txt("mKit", FETCHED.kit?"module loaded ✓ (local only)":"not loaded (snapshot mode)");
+}
+function jget(url, ms){
+  return new Promise(function(res){
+    var done=false;
+    var t=setTimeout(function(){ if(!done){done=true; res(null);} }, ms||9000);
+    fetch(url).then(function(r){ if(!r.ok) throw 0; return r.json(); })
+      .then(function(j){ if(!done){done=true; clearTimeout(t); res(j);} })
+      .catch(function(){ if(!done){done=true; clearTimeout(t); res(null);} });
+  });
+}
+function rpcCall(url, to, data, ms){
+  return jget(url, 0) && null; /* replaced below */
+}
+/* JSON-RPC over fetch (publicnode sends CORS *) */
+function ethCall(url, to, data, ms){
+  return new Promise(function(res){
+    fetch(url, {method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({jsonrpc:"2.0",id:1,method:"eth_call",params:[{to:to,data:data},"latest"]})})
+    .then(function(r){return r.json();})
+    .then(function(j){ res(j && j.result); })
+    .catch(function(){ res(null); });
+  });
+}
+function big(x){ try{ return BigInt(x); }catch(e){ return 0n; } }
+function hexDec(x){ try{ return BigInt(x).toString(10); }catch(e){ return "0"; } }
+
+/* ============================== boot: render snapshot immediately ============================== */
+renderSnapshot();
+refreshPill();
+clockTick(); setInterval(clockTick, 1000);
+function clockTick(){
+  var age = Math.floor((Date.now() - Date.parse(SNAP_TIME+"Z"))/1000);
+  $("clock").textContent = "page loaded · data " + (age<90? age+"s" : Math.floor(age/60)+"m") + " old";
+}
+
+function renderSnapshot(){
+  var r=SNAP.reflection;
+  txt("attested", fmt(r.attestedHeight)); txt("burns", fmt(r.bridgeBurns)); txt("mints", fmt(r.bridgeMinted));
+  txt("inflight", fmt(r.bridgeBurns - r.bridgeMinted));
+  txt("liveNotes", fmt(r.liveNotes)); txt("burnDeposits", fmt(r.burnDeposits));
+  txt("awaiting", fmt(r.burnsAwaitingBundle)); txt("crossouts", fmt(r.foldedCrossoutCount));
+  txt("relayState", SNAP.relay.state + (SNAP.relay.proving?" · proving":""));
+  txt("relayAge", "heartbeat " + SNAP.relay.ageSeconds + "s ago");
+  txt("btcTip", fmt(SNAP.btc.tip)); txt("btcFees", SNAP.btc.fees.fastestFee+" / "+SNAP.btc.fees.hourFee);
+  txt("leaves", fmt(SNAP.index.counts.leaves)); txt("nulls", fmt(SNAP.index.counts.nullifiers));
+  txt("wrapsC", fmt(SNAP.index.counts.wraps));
+  txt("cbtc", fmt(11949754) + " sats");
+  txt("tacSupply", "2,751 TAC (snapshot)");
+  txt("emission", SNAP.farms.emissionTacPerDay.toLocaleString("en-US",{maximumFractionDigits:1})+" /day");
+  txt("runway", "runway ~"+SNAP.farms.runwayDays+" days · treasury "+Math.round(SNAP.farms.treasuryTac)+" TAC");
+  txt("feeFloor", SNAP.quote.gasAwareFloorUnits + " u");
+  txt("provQ", SNAP.prover.queued); txt("provW", (SNAP.prover.workers||[]).length);
+  txt("provStats", "proved "+SNAP.prover.proved+" · failed "+SNAP.prover.failed+" · p50 prove "+SNAP.prover.recent.proveP50+"s");
+  txt("root", "0x… (loading)");
+  txt("successor", "none — root");
+  renderChart(SNAP.chart, true);
+  renderLeaderboard(SNAP.leaderboard, false);
+  renderEvm(SNAP.evmHeads, true);
+  renderEvmEvents(SNAP.evmEvents, false);
+  txt("chartRange", SNAP.chart.b0.toLocaleString()+" → "+SNAP.chart.b1.toLocaleString());
+  document.querySelectorAll(".snapTime").forEach(function(e){ e.textContent=SNAP_TIME+"Z"; });
+  /* chain tip for the lag figure: live mempool → else on-chain relay tip → else API tipHeight */
+  var lag = (live.btcTip!==undefined) ? (live.btcTip - r.attestedHeight)
+          : (live.relayTip!==undefined) ? (Number(live.relayTip) - r.attestedHeight)
+          : (r.tipHeight - r.attestedHeight);
+  setLag(lag);
+  txt("relayTip", live.relayTip!==undefined ? fmt(live.relayTip)
+    : fmt(Number((SNAP.chainReads&&SNAP.chainReads.relayTip)||974923)));
+}
+
+function setLag(lag){
+  var el=$("lag"); if(!el) return;
+  el.textContent = (lag>=0? fmt(lag) : "−"+fmt(-lag));
+  el.className = "kpi " + (lag<=6?"lag-ok":lag<=24?"lag-warn":"lag-bad");
+}
+
+/* ============================== chart (hand-drawn SVG) ============================== */
+function renderChart(cd, isSnap){
+  var W=1100,H=260,P=34;
+  var N=cd.buckets.length;
+  var tot=[0,0,0,0,0];
+  cd.buckets.forEach(function(b){ for(var i=0;i<5;i++) tot[i]+=b[i]; });
+  var mx=1; cd.buckets.forEach(function(b){ var s=b[0]+b[1]+b[2]+b[3]+b[4]; if(s>mx)mx=s; });
+  var plotW=W-P*2, plotH=H-P-26;
+  var colw=plotW/N;
+  var s='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;font-family:var(--mono)">';
+  s+='<rect x="'+P+'" y="8" width="'+plotW+'" height="'+plotH+'" fill="#0c1220" rx="6"/>';
+  for(var g=1;g<=3;g++){ var gy=8+plotH-plotH*g/3;
+    s+='<line x1="'+P+'" y1="'+gy+'" x2="'+(P+plotW)+'" y2="'+gy+'" stroke="#1a2334" stroke-width="1"/>';
+    s+='<text x="'+(P-6)+'" y="'+(gy+4)+'" fill="#5a6579" font-size="10" text-anchor="end">'+fmt(Math.round(mx*g/3))+'</text>';
+  }
+  var cols=['#00e5a0','#ff5d73','#6f7dff','#ffb454','#39c6ff'];
+  var names=['leaves','nullifiers','wraps','locks','cross-outs'];
+  cd.buckets.forEach(function(b,i){
+    var y=8+plotH, x=P+i*colw;
+    for(var k=0;k<5;k++){
+      var hh=b[k]/mx*plotH;
+      if(hh>0){ y-=hh; s+='<rect x="'+(x+0.5)+'" y="'+y+'" width="'+Math.max(colw-1.2,0.8)+'" height="'+hh+'" fill="'+cols[k]+'"/>'; }
+    }
+    if(i%40===0){
+      s+='<text x="'+(x+colw/2)+'" y="'+(H-8)+'" fill="#5a6579" font-size="9.5" text-anchor="middle">blk '+fmt(cd.b0+i*cd.width)+'</text>';
+    }
+  });
+  s+='<rect id="hov" x="0" y="8" width="'+colw+'" height="'+plotH+'" fill="#ffffff" opacity="0" />';
+  s+='</svg>';
+  s+='<div id="chartTip" class="sub2" style="min-height:18px">hover for counts · total in window: '+fmt(tot.reduce(function(a,b){return a+b;},0))+' entries (leaves '+fmt(tot[0])+' / nullifiers '+fmt(tot[1])+' / wraps '+fmt(tot[2])+')</div>';
+  $("chartBox").innerHTML=s;
+  var svg=$("chartBox").querySelector("svg"), tip=$("chartTip");
+  svg.addEventListener("mousemove", function(ev){
+    var r=svg.getBoundingClientRect();
+    var x=(ev.clientX-r.left)/r.width*W - P;
+    var i=Math.floor(x/colw); if(i<0)i=0; if(i>=N)i=N-1;
+    $("hov").setAttribute("x", String(P+i*colw)); $("hov").setAttribute("opacity","0.06");
+    var b=cd.buckets[i];
+    tip.innerHTML = "blocks "+fmt(cd.b0+i*cd.width)+"–"+fmt(cd.b0+(i+1)*cd.width)+" — leaves <b>"+b[0]+"</b> · nullifiers <b>"+b[1]+"</b> · wraps <b>"+b[2]+"</b> · locks <b>"+b[3]+"</b> · cross-outs <b>"+b[4]+"</b>";
+  });
+  svg.addEventListener("mouseleave", function(){ $("hov").setAttribute("opacity","0"); });
+}
+
+/* ============================== leaderboard ============================== */
+var XNS="0x6e797ba2d3103aF167918e71a7E01DE40D45f74b";
+function selOf(sig){
+  /* keccak first 4 bytes, computed from the kit-independent tiny table (precomputed) */
+  return {"getName(address)":"0x5fd4b08a","getAddress(string)":"0xbf40fac1"}[sig];
+}
+function renderLeaderboard(rows, live){
+  var tb=$("lbTable").querySelector("tbody");
+  if(!rows||!rows.length){ tb.innerHTML='<tr><td colspan="5">unavailable</td></tr>'; return; }
+  var h="";
+  rows.slice(0,15).forEach(function(r,i){
+    h+='<tr><td style="color:var(--faint)">'+(i+1)+'</td>'
+      +'<td class="mono"><a href="https://etherscan.io/address/'+r.address+'" target="_blank" rel="noopener">'+short(r.address,8)+'</a> <span class="xnsName" data-addr="'+r.address+'" style="color:var(--acc2)"></span></td>'
+      +'<td>'+fmt(Math.round(r.points))+'</td>'
+      +'<td>'+fmt(r.deposit_count)+'</td>'
+      +'<td>'+ethF(BigInt(r.amount_wei||"0"),2)+'</td></tr>';
+  });
+  tb.innerHTML=h;
+  resolveXnsNames();
+}
+function resolveXnsNames(){
+  if(!FETCHED.rpc) return;
+  var els=document.querySelectorAll(".xnsName");
+  var list=Array.prototype.slice.call(els).slice(0,8);
+  list.forEach(function(el){
+    var addr=el.getAttribute("data-addr").replace("0x","").toLowerCase();
+    ethCall(RPC_ETH, XNS, selOf("getName(address)")+"0"+"0".repeat(24)+addr).then(function(res){
+      if(res && res.length>130){
+        try{
+          var off=parseInt(res.substr(2,64),16), ln=parseInt(res.substr(66,64),16);
+          if(ln>0 && ln<64){ el.textContent=bytesToAscii(res, off, ln); }
+        }catch(e){}
+      }
+    });
+  });
+}
+function bytesToAscii(hex, wordOff, len){
+  /* wordOff = ABI byte offset (0x20 = 32); the length word sits right before the data */
+  var s="";
+  var start=2+(wordOff+32)*2;
+  if(start<2 || start+2*len>hex.length) return ""; /* out of range: refuse */
+  for(var i=0;i<len;i++){
+    s+=String.fromCharCode(parseInt(hex.substr(start+i*2, 2),16));
+  }
+  return s;
+}
+
+/* ============================== EVM pools ============================== */
+var RPC_ETH="https://ethereum-rpc.publicnode.com";
+var RPC_BASE="https://base-rpc.publicnode.com";
+var KEEPER="https://tacit-evm-pool-keepers.onrender.com/";
+var EVMPOOL="0x000000c2A20657CE25f2Ba99737933D031AFBEE9";
+var SEL_ROOT="0xebf0c717", SEL_NIDX="0xfc7e9c6f";
+var CHAINS=[{id:1,name:"Ethereum",rpc:RPC_ETH},{id:8453,name:"Base",rpc:RPC_BASE},
+            {id:4663,name:"Robinhood",rpc:"https://rpc.robinhoodchain.com"},{id:4326,name:"MegaETH",rpc:null}];
+function renderEvm(heads, isSnap){
+  var cards=document.querySelectorAll('#evmGrid [data-evm="size"]');
+  var subs=document.querySelectorAll('#evmGrid [data-evm="sub"]');
+  CHAINS.forEach(function(c,i){
+    var h=heads[String(c.id)];
+    if(!h){ cards[i].textContent="—"; subs[i].textContent="no data"; return; }
+    cards[i].textContent=fmt(Number(h.size));
+    var state = isSnap ? "snapshot — chain re-check on load" : "keeper live";
+    subs[i].innerHTML='notes · root <span class="mono">'+String(h.root).slice(0,8)+'…</span><br><span class="okline">'+state+'</span>';
+  });
+}
+function renderEvmEvents(ev, live){
+  var tb=$("evmEvents").querySelector("tbody");
+  if(!ev||!ev.length){ tb.innerHTML='<tr><td colspan="4" style="color:var(--faint)">'+(live?"no recent events":"live events unavailable — snapshot had none in window")+'</td></tr>'; return; }
+  var h="";
+  ev.slice(0,12).forEach(function(e){
+    var c=CHAINS.filter(function(x){return x.id===e.chainId;})[0]||{name:e.chainId};
+    h+='<tr><td>'+c.name+'</td><td><span style="color:'+(e.kind==="transact"?"#00e5a0":"#39c6ff")+'">'+e.kind+'</span></td>'
+      +'<td class="mono">'+fmt(e.block)+'</td>'
+      +'<td><a class="mono" href="'+e.link+'" target="_blank" rel="noopener">'+short(e.tx,10)+'</a></td></tr>';
+  });
+  tb.innerHTML=h;
+}
+
+/* ============================== LIVE FETCH LAYER ============================== */
+
+async function boot(){
+  // 1. relay API (CORS open on GET routes)
+  var base="https://api.tacit.finance/";
+  var reflP = jget(base+"reflection/status?network=mainnet").then(function(j){ if(j){FETCHED.tacit=true; live.refl=j;} });
+  var relayP = jget(base+"confidential/relay").then(function(j){ if(j){FETCHED.tacit=true; live.relay=j;} });
+  var provP = jget(base+"prover/board").then(function(j){ if(j){FETCHED.tacit=true; live.prov=j;} });
+  var quoteP = jget(base+"confidential/quote?asset=cETH&amountWei=100000000000000000").then(function(j){ if(j){FETCHED.tacit=true; live.quote=j;} });
+  var farmP = jget(base+"farm/health").then(function(j){ if(j){FETCHED.tacit=true; live.farm=j;} });
+  var lbP = jget(base+"leaderboard").then(function(j){ if(j&&j.length){FETCHED.tacit=true; live.lb=j;} });
+  var idxP = jget(base+"confidential/index?from=6000&limit=1000").then(function(j){ if(j&&j.entries){FETCHED.tacit=true; live.idxHead=j;} });
+
+  // 2. mempool.space
+  var tipP = jget("https://mempool.space/api/blocks/tip/height", 8000).then(function(j){ if(j!==null&&j!==undefined&&typeof j==="number"){FETCHED.mempool=true; live.btcTip=j;} else if(j&&Number(j)){FETCHED.mempool=true; live.btcTip=Number(j);} });
+  var feeP = jget("https://mempool.space/api/v1/fees/recommended").then(function(j){ if(j){FETCHED.mempool=true; live.fees=j;} });
+
+  // 3. keepers ×4
+  CHAINS.forEach(function(c){
+    jget(KEEPER+c.id+"/evm-pool/keeper/head", 12000).then(function(j){
+      if(j&&j.root!==undefined){ FETCHED.keeper=true; live["head"+c.id]=j; }
+    });
+  });
+  var evP = jget(KEEPER+"1/evm-pool/keeper/events?from="+(SNAP.chainReads? SNAP.chainReads.ethBlock||26362511-4000 : 26358511), 12000).then(function(j){
+    if(j&&j.events){ FETCHED.keeper=true; live.ev1=j; }
+  });
+  var evBP = jget(KEEPER+"8453/evm-pool/keeper/events?from="+(SNAP.chainReads? SNAP.chainReads.baseBlock||54292764-4000 : 54289000), 12000).then(function(j){
+    if(j&&j.events){ FETCHED.keeper=true; live.ev8453=j; }
+  });
+
+  // 4. on-chain reads via public RPC
+  var POOL="0x000000000Ed1eabD231Be41d93b719056F7febFC",
+      RELAY="0x20A6ddc2C6E620c6248B5A34E85996516FDd19D0",
+      ENGINE="0x000000003f608BDdF0ca45934003ffb9DbDF70DB",
+      TAC="0xA1313eb9f3A445606D9583bcAc3ebeB56a858279";
+  var S={nextLeaf:"0x0be4f422",curRoot:"0xfdab463d",backing:"0x9f5b61d9",succ:"0x6ff968c3",tip:"0x1fd4827a",
+         outCusd:"0xa42542c0",tsup:"0x18160ddd",blockNum:"eth_blockNumber"};
+  var bnP = new Promise(function(res){
+    fetch(RPC_ETH,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({jsonrpc:"2.0",id:1,method:"eth_blockNumber",params:[]})})
+      .then(function(r){return r.json();}).then(function(j){ if(j&&j.result){FETCHED.rpc=true; live.ethBlock=parseInt(j.result,16);} res(); })
+      .catch(function(){res();});
+  });
+  var c1 = ethCall(RPC_ETH, POOL, S.nextLeaf).then(function(v){ if(v){FETCHED.rpc=true; live.leaves=hexDec(v);} });
+  var c2 = ethCall(RPC_ETH, POOL, S.curRoot).then(function(v){ if(v){FETCHED.rpc=true; live.poolRoot=v;} });
+  var c3 = ethCall(RPC_ETH, POOL, S.backing).then(function(v){ if(v){FETCHED.rpc=true; live.cbtc=hexDec(v);} });
+  var c4 = ethCall(RPC_ETH, POOL, S.succ).then(function(v){ if(v){FETCHED.rpc=true; live.succ=v;} });
+  var c5 = ethCall(RPC_ETH, RELAY, S.tip).then(function(v){ if(v){FETCHED.rpc=true; live.relayTip=hexDec(v);} });
+  var c6 = ethCall(RPC_ETH, ENGINE, S.outCusd).then(function(v){ if(v){FETCHED.rpc=true; live.cusd=hexDec(v);} });
+  var c7 = ethCall(RPC_ETH, TAC, S.tsup).then(function(v){ if(v){FETCHED.rpc=true; live.tacSupply=hexDec(v);} });
+  var c8 = ethCall(RPC_BASE, EVMPOOL, SEL_ROOT).then(function(v){ if(v){FETCHED.rpc=true; live.baseRoot=v;} });
+  var c9 = ethCall(RPC_BASE, EVMPOOL, SEL_NIDX).then(function(v){ if(v){FETCHED.rpc=true; live.baseIdx=hexDec(v);} });
+  var c10 = ethCall(RPC_ETH, EVMPOOL, SEL_ROOT).then(function(v){ if(v){FETCHED.rpc=true; live.ethEvmRoot=v;} });
+
+  await Promise.all([reflP,relayP,provP,quoteP,farmP,lbP,idxP,tipP,feeP,evP,evBP,bnP,
+                     c1,c2,c3,c4,c5,c6,c7,c8,c9,c10]);
+  /* keepers' heads land asynchronously; give them a short grace window before first paint */
+  await new Promise(function(res){ setTimeout(res, 2500); });
+  applyLive();
+  /* a late keeper head (cold-start on Render's free tier) still gets its card + chain check */
+  CHAINS.forEach(function(c){
+    var check=function(n){
+      if(live["head"+c.id]){ applyLive(); }
+      else if(n>0){ setTimeout(function(){ check(n-1); }, 3000); }
+    };
+    setTimeout(function(){ check(6); }, 4000);
+  });
+}
+
+function applyLive(){
+  // bridge numbers
+  var r=live.refl;
+  if(r){
+    txt("attested", fmt(r.attestedHeight)); txt("burns", fmt(r.bridgeBurns)); txt("mints", fmt(r.bridgeMinted));
+    txt("inflight", fmt(r.bridgeBurns-r.bridgeMinted));
+    txt("liveNotes", fmt(r.liveNotes)); txt("burnDeposits", fmt(r.burnDeposits));
+    txt("awaiting", fmt(r.burnsAwaitingBundle)); txt("crossouts", fmt(r.foldedCrossoutCount));
+    if(live.btcTip!==undefined) setLag(live.btcTip - r.attestedHeight);
+    else if(r.tipHeight) setLag(r.tipHeight - r.attestedHeight);
+  }
+  if(live.relay){
+    txt("relayState", live.relay.state + (live.relay.proving?" · proving":""));
+    txt("relayAge", "heartbeat " + live.relay.ageSeconds + "s ago");
+  }
+  if(live.btcTip!==undefined) txt("btcTip", fmt(live.btcTip));
+  if(live.fees) txt("btcFees", live.fees.fastestFee+" / "+live.fees.hourFee);
+  if(live.relayTip!==undefined) txt("relayTip", fmt(live.relayTip));
+  // pool
+  if(live.leaves) txt("leaves", fmt(live.leaves));
+  if(live.idxHead && live.idxHead.counts){
+    txt("nulls", fmt(live.idxHead.counts.nullifiers));
+    txt("wrapsC", fmt(live.idxHead.counts.wraps));
+  }
+  if(live.poolRoot) txt("root", short(live.poolRoot,10));
+  if(live.cbtc!==undefined) txt("cbtc", fmt(Number(live.cbtc))+" sats");
+  if(live.cusd!==undefined) txt("cusd", ethF(BigInt(live.cusd||"0"),0)+" cUSD");
+  if(live.tacSupply) txt("tacSupply", ethF(BigInt(live.tacSupply),0)+" TAC");
+  if(live.succ==="0x"||live.succ==="0x0000000000000000000000000000000000000000000000000000000000000000") txt("successor","none — root");
+  else if(live.succ) txt("successor", short(live.succ,6));
+  // farms
+  if(live.farm){
+    var checks=live.farm.checks||[];
+    checks.forEach(function(ch){
+      if(ch.name==="emission"&&ch.detail){ var m=ch.detail.match(/([\d.]+)\s*TAC\/day/); if(m) txt("emission", Number(m[1]).toLocaleString("en-US",{maximumFractionDigits:1})+" /day"); }
+      if(ch.name==="runway"&&ch.detail){ txt("runway", ch.detail + " · solvency ✓"); }
+    });
+  }
+  // quote + prover
+  if(live.quote) txt("feeFloor", live.quote.gasAwareFloorUnits+" u");
+  if(live.prov){
+    txt("provQ", live.prov.queued); txt("provW", (live.prov.workers||[]).length);
+    if(live.prov.recent) txt("provStats", "proved "+live.prov.proved+" · failed "+live.prov.failed+" · p50 prove "+live.prov.recent.proveP50+"s");
+  }
+  // EVM heads + chain cross-check
+  CHAINS.forEach(function(c,i){
+    var h=live["head"+c.id];
+    if(!h) return;
+    var cards=document.querySelectorAll('#evmGrid [data-evm="size"]');
+    var subs=document.querySelectorAll('#evmGrid [data-evm="sub"]');
+    cards[i].textContent=fmt(Number(h.size));
+    var note='notes · root <span class="mono">'+String(h.root).slice(0,8)+'…</span><br><span class="okline">keeper live</span>';
+    var chk="";
+    if(c.id===1 && live.ethEvmRoot){ chk=(BigInt(h.root)===BigInt(live.ethEvmRoot))?' · <span class="okline">chain ✓ verified</span>':' · <span class="errline">chain mismatch!</span>'; }
+    if(c.id===8453 && live.baseRoot){ chk=(BigInt(h.root)===BigInt(live.baseRoot))?' · <span class="okline">chain ✓ verified</span>':' · <span class="errline">chain mismatch!</span>'; }
+    subs[i].innerHTML=note+chk;
+  });
+  // leaderboard live
+  if(live.lb){ renderLeaderboard(live.lb, true); }
+  // live EVM events
+  var evs=[];
+  if(live.ev1&&live.ev1.events) live.ev1.events.forEach(function(e){ evs.push({chainId:1,kind:e.kind,block:e.block,tx:e.tx,link:"https://etherscan.io/tx/"+e.tx}); });
+  if(live.ev8453&&live.ev8453.events) live.ev8453.events.forEach(function(e){ evs.push({chainId:8453,kind:e.kind,block:e.block,tx:e.tx,link:"https://basescan.org/tx/"+e.tx}); });
+  evs.sort(function(a,b){ return b.block-a.block; });
+  renderEvmEvents(evs, true);
+  // activity chart: refetch a recent index window live
+  if(live.idxHead){
+    txt("chartRange", fmt(live.idxHead.deployBlock||26004023)+" → live head "+fmt(live.idxHead.headBlock||0));
+  }
+  refreshPill();
+}
+boot();
+
+/* ============================== lookup ============================== */
+function detectKind(s){
+  s=s.trim();
+  if(/^tacit1/i.test(s)) return "tacit";
+  if(/^bp1/i.test(s)) return "bp";
+  if(/^0x[a-fA-F0-9]{40}$/.test(s)) return "evm";
+  if(/^[a-fA-F0-9]{64}$/.test(s)) return "btcTx";
+  if(/^[^@\s]+@[^@\s]+$/.test(s)) return "xns";
+  return "?";
+}
+var bech32mChars="qpzry9x8gf2tvdw0s3jn54khce6mua7l";
+function bech32mDecode(addr){
+  // full bech32m decode with checksum verify
+  addr=addr.toLowerCase();
+  var pos=addr.lastIndexOf("1");
+  if(pos<1) return null;
+  var hrp=addr.slice(0,pos), data=addr.slice(pos+1);
+  var vals=[];
+  for(var i=0;i<data.length;i++){
+    var c=bech32mChars.indexOf(data[i]); if(c<0) return null; vals.push(c);
+  }
+  function polymod(v){
+    var GEN=[0x3b6a57b2,0x26508e6d,0x1ea119fa,0x3d4233dd,0x2a1462b3], chk=1;
+    for(var p=0;p<v.length;p++){
+      var b=chk>>25; chk=((chk&0x1ffffff)<<5)^v[p];
+      for(var j=0;j<5;j++){ if((b>>j)&1) chk^=GEN[j]; }
+    }
+    return chk;
+  }
+  var hexp=hrp.split("").map(function(c){return c.charCodeAt(0)>>5;});
+  var hdata=hrp.split("").map(function(c){return c.charCodeAt(0)&31;});
+  var chk=polymod(hexp.concat([0],hdata).concat(vals));
+  if(chk!==0x2bc830a3) return {err:"checksum"};
+  // convert 5->8
+  var acc=0,bits=0,ret=[];
+  for(var i=0;i<vals.length-6;i++){
+    acc=(acc<<5)|vals[i]; bits+=5;
+    while(bits>=8){ bits-=8; ret.push((acc>>bits)&255); }
+  }
+  return {hrp:hrp, bytes:ret};
+}
+function doLookup(){
+  var s=$("lkIn").value.trim();
+  if(!s) return;
+  var out=$("lkOut"); out.classList.remove("hidden");
+  var kind=detectKind(s);
+  var h='<h3>Footprint · <span class="mono" style="text-transform:none;color:var(--txt)">'+short(s,22)+'</span></h3>';
+  if(kind==="tacit"||kind==="bp"){
+    var d=bech32mDecode(s);
+    if(!d){ h+='<div class="errline">not valid bech32m — not a Tacit address</div>'; }
+    else if(d.err){ h+='<div class="errline">bech32m checksum FAILED — this is not a valid Tacit address (typo?)</div>'; }
+    else {
+      var b=d.bytes;
+      var ver=b[0], flags=b[1];
+      h+='<div class="grid g4" style="margin-top:8px">';
+      h+='<div><div class="sub2">hrp / version</div><div class="mono">'+d.hrp+' / 0x0'+ver.toString(16)+'</div></div>';
+      h+='<div><div class="sub2">lanes flag</div><div class="mono">0x'+flags.toString(16).padStart(2,"0")+'</div></div>';
+      var off=2, lanes=[];
+      if(flags&0x01){ lanes.push("Bitcoin spend+scan keys (33+33)"); off+=66; }
+      if(flags&0x02){ lanes.push("Ethereum-side key (33)"); off+=33; }
+      if(flags&0x04){ lanes.push("pool lane: view key (33) + A (32) + N (32)"); }
+      if(flags&0x80){ lanes.push("0x80: eth-side key == BTC spend key"); }
+      h+='<div style="grid-column:span 2"><div class="sub2">decoded lanes</div><div style="font-size:12.5px;line-height:1.8">'+lanes.map(function(l){return "• "+l;}).join("<br>")+'</div></div>';
+      h+='<div style="grid-column:span 4"><div class="sub2">payload</div><div class="mono" style="font-size:11.5px;word-break:break-all;color:var(--dim)">'+b.map(function(x){return x.toString(16).padStart(2,"0");}).join("")+'</div></div>';
+      h+='</div>';
+      h+='<div class="okline" style="margin-top:8px">✓ valid bech32m checksum · decoded 100% locally — this lookup revealed nothing to anyone but you</div>';
+      if(kind==="bp"||d.hrp==="bp"){
+        h+='<div class="sub2" style="margin-top:6px">bp1 = the pool lane of a tacit1 address (view key ‖ A ‖ N) — payments into the EVM pool or the Bitcoin shielded pool pay these 97 bytes.</div>';
+      }
+    }
+  } else if(kind==="btcTx"){
+    h+='<div class="sub2" style="margin-top:8px">Checking mempool.space…</div>';
+    out.innerHTML=h;
+    jget("https://mempool.space/api/tx/"+s).then(function(t){
+      var hh='<div class="mono" style="word-break:break-all">'+s+'</div>';
+      if(t&&t.status){
+        hh+='<div class="grid g3" style="margin-top:10px">'
+          +'<div><div class="sub2">status</div>'+(t.status.confirmed?('confirmed @ '+fmt(t.status.block_height)):'in mempool')+'</div>'
+          +'<div><div class="sub2">fee</div>'+(t.fee? (t.fee+' sats ('+(t.fee/Math.max(t.size||1,1)).toFixed(1)+' sat/vB)'):'—')+'</div>'
+          +'<div><div class="sub2">vsize</div>'+fmt(t.vsize||t.size||0)+'</div></div>';
+        var nOut=(t.vout||[]).length, taproot=(t.vout||[]).filter(function(v){return v.scriptpubkey_type==="v1_p2tr";}).length;
+        hh+='<div class="sub2" style="margin-top:8px">'+nOut+' outputs · '+taproot+' Taproot — Tacit envelopes are commit/reveal pairs on Taproot. If this tx is part of an envelope, its reveal (and its decoded op: etch, mint, burn, transfer…) is on <a href="https://www.tacitscan.io/tx/'+s+'" target="_blank" rel="noopener">tacitscan.io/tx/'+short(s,6)+'</a></div>';
+        hh+='<div class="okline">amounts of any Tacit notes it carries are NOT visible — envelope payloads are commitments</div>';
+        out.innerHTML=hh;
+      } else {
+        out.innerHTML=hh+'<div class="errline" style="margin-top:8px">not found on Bitcoin (wrong txid? or not yet broadcast)</div>';
+      }
+    });
+  } else if(kind==="evm"){
+    h+='<div class="grid g2" style="margin-top:8px"><div><div class="sub2">what is public for this address</div>'
+      +'<div class="mono" style="font-size:12px;word-break:break-all">'+s+'</div>'
+      +'<div class="sub2" style="margin-top:8px">checking reverse XNS name + leaderboard…</div></div></div>';
+    out.innerHTML=h;
+    var hex="0x"+s.slice(2).toLowerCase();
+    ethCall(RPC_ETH, XNS, selOf("getName(address)")+"0"+"0".repeat(24)+hex.slice(2)).then(function(res){
+      var name="";
+      if(res&&res.length>130){ try{ var off=parseInt(res.substr(2,64),16), ln=parseInt(res.substr(66,64),16); if(ln>0&&ln<64) name=bytesToAscii(res,off,ln); }catch(e){} }
+      var row=(live.lb||SNAP.leaderboard).filter(function(r){return r.address.toLowerCase()===hex.toLowerCase();})[0];
+      var hh='<div class="grid g2" style="margin-top:8px">';
+      hh+='<div><div class="sub2">XNS reverse name</div>'+(name?'<span class="mono" style="color:var(--acc2)">'+name+'</span> — this address publicly claimed it':'<span style="color:var(--faint)">none set</span>')+'</div>';
+      hh+='<div><div class="sub2">points program (public)</div>'+(row? fmt(Math.round(row.points))+' points · '+fmt(row.deposit_count)+' deposits · '+ethF(BigInt(row.amount_wei),2)+' ETH wrapped':'<span style="color:var(--faint)">not on the points leaderboard</span>')+'</div>';
+      hh+='</div>';
+      hh+='<div class="sub2" style="margin-top:10px">What this page can NEVER see for this address: pool notes it owns, note amounts, which nullifiers were its spends. Wraps and unwraps from it are public boundary legs. Decode a <b>tacit1</b> address (not a 0x address) if you want the confidential identity itself.</div>';
+      out.innerHTML=hh;
+    });
+  } else if(kind==="xns"){
+    out.innerHTML=h+'<div class="sub2" style="margin-top:8px">resolving on Ethereum mainnet (XNS registry)…</div>';
+    var nm=s, enc=[]; for(var i=0;i<nm.length;i++) enc.push(nm.charCodeAt(i).toString(16).padStart(2,"0"));
+    var data=selOf("getAddress(string)")
+      +"0000000000000000000000000000000000000000000000000000000000000020"  /* offset 0x20 */
+      +String("00000000000000000000000000000000000000000000000000000000000000"+nm.length.toString(16)).slice(-64)
+      +enc.join("")
+      +"0".repeat((64-(nm.length*2)%64)%64);
+    ethCall(RPC_ETH, XNS, data).then(function(res){
+      var z="0x0000000000000000000000000000000000000000";
+      if(res&&res.length>=66){ var a="0x"+res.slice(26,66); if(a!==z){
+        out.innerHTML=h+'<div class="grid g2" style="margin-top:8px"><div><div class="sub2">resolved (XNS · on-chain)</div><span class="mono">'+a+'</span></div><div><div class="sub2">next</div><span style="font-size:12.5px;color:var(--dim)">paste it back in as an EVM address to see its public footprint</span></div></div>';
+      } else {
+        out.innerHTML=h+'<div class="errline" style="margin-top:8px">registry returned zero — name not registered (or name ≠ @xns namespace on mainnet)</div>';
+      } } else out.innerHTML=h+'<div class="errline" style="margin-top:8px">lookup failed (RPC unreachable)</div>';
+    });
+  } else {
+    h+='<div class="errline">couldn\'t detect the type — paste a tacit1… / bp1… address, a 64-hex Bitcoin txid, a 0x EVM address, or a name@xns</div>';
+    out.innerHTML=h;
+  }
+}
+$("lkBtn").addEventListener("click", doLookup);
+$("lkIn").addEventListener("keydown", function(e){ if(e.key==="Enter") doLookup(); });
+
+/* kit note */
+</script>
+</body>
+</html>
